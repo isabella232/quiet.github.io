@@ -67,25 +67,17 @@
   <ul class="post-list">
     
       <li>
-        <span class="post-meta">Mar 24, 2016</span>
+        <span class="post-meta">Mar 29, 2016</span> • <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Brian Armstrong</span></span>
 
         <h3>
-          <a class="post-link" href="/jekyll/update/2016/03/24/welcome-to-jekyll.html">Welcome to Jekyll!</a>
+          <a class="post-link" href="/quiet/2016/03/29/quiet-profile-lab.html">Quiet</a>
         </h3>
 
-        <p>You’ll find this post in your <code class="highlighter-rouge">_posts</code> directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run <code class="highlighter-rouge">jekyll serve</code>, which launches a web server and auto-regenerates your site when a file is updated.</p>
+        <p>When I started working on <a href="https://github.com/quiet/quiet">libquiet</a>, I was trying to answer a question for myself. I had seen projects which passed data through the headphone jack, which I thought was an interesting idea. I wanted to know how fast this method could send data. Many of these methods used Frequency-Shift Keying, which is easy to implement but typically does not achieve the maximum speed possible. I started researching, which lead me to <a href="http://liquidsdr.org/">liquid sdr</a> which offers basic framing and all the modulation and error correction methods I would need to answer my question. And so, libquiet was born, creating a configurable modem engine which connects soundcard to liquid SDR.</p>
 
-<p>To add new posts, simply add a file in the <code class="highlighter-rouge">_posts</code> directory that follows the convention <code class="highlighter-rouge">YYYY-MM-DD-name-of-post.ext</code> and includes the necessary front matter. Take a look at the source for this post to get an idea about how it works.</p>
+<p>As the project continued, I realized it would also be possible to compile my library to JS using emscripten. I was surprised how well this works, and now, Quiet.js is compatible with the native binaries create with libquiet. My aim is to bring quiet to as many platforms as possible. It’s not just for your headphone jack, either. Quiet works quite well through your speakers.</p>
 
-<p>Jekyll also offers powerful support for code snippets:</p>
-
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nf">print_hi</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
-  <span class="nb">puts</span> <span class="s2">"Hi, </span><span class="si">#{</span><span class="nb">name</span><span class="si">}</span><span class="s2">"</span>
-<span class="k">end</span>
-<span class="n">print_hi</span><span class="p">(</span><span class="s1">'Tom'</span><span class="p">)</span>
-<span class="c1">#=&gt; prints 'Hi, Tom' to STDOUT.</span></code></pre></figure>
-
-<p>Check out the <a href="http://jekyllrb.com/docs/home">Jekyll docs</a> for more info on how to get the most out of Jekyll. File all bugs/feature requests at <a href="https://github.com/jekyll/jekyll">Jekyll’s GitHub repo</a>. If you have questions, you can ask them on <a href="https://talk.jekyllrb.com/">Jekyll Talk</a>.</p>
+<p>There’s a few reasons I chose the name quiet. For one, I was thinking about using the headphone jack, which wouldn’t emit any sound. As the project expanded, I realized that ultrasonic transmission would also be possible – another type of quiet modem. Additionally, the quiet modem uses SDR, but it’s “quiet” in the RF spectrum (mostly!). And finally, the best reason, because modems don’t work when they’re clipping! Turn down your volume before using quiet.</p>
 
 
 
