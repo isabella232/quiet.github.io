@@ -7,16 +7,15 @@
   <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
   <![endif]-->
 
-  <title>Quiet Project</title>
-  <meta name="description" content="Transmit data with sound. Quiet Project offers the ability to build native binaries that work with your soundcard and a JS implementation that uses Web Audio
-">
+  <title>Quiet Profile Lab — Build a Modem, Learn Some DSP</title>
+  <meta name="description" content="Quiet.js and libquiet are capable of transmission via audible tones, ultrasonic tones, and through an audio cable at wide spectrum. Quiet provides a JSON fil...">
 
   <link rel="stylesheet" type="text/css" href="/stylesheets/bootstrap.min.css"></link>
   <link rel="stylesheet" type="text/css" href="/stylesheets/stylesheet.css" media="screen">
   <link rel="stylesheet" type="text/css" href="/stylesheets/github-dark.css" media="screen">
   <link rel="stylesheet" type="text/css" href="/stylesheets/main.css" media="screen">
   <link rel="stylesheet" type="text/css" href="/stylesheets/print.css" media="print">
-  <link rel="canonical" href="https://quiet.github.io/">
+  <link rel="canonical" href="https://quiet.github.io/quiet-blog/2016/03/30/quiet-profile-lab.html">
   <link rel="alternate" type="application/rss+xml" title="Quiet Project" href="https://quiet.github.io/feed.xml">
   <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
 </head>
@@ -63,18 +62,15 @@
         <hr>
         <section class="main_content">
           <div class="wrapper">
-            <div class="home">
+            <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
 
-  <ul class="post-list">
-    
-      <li>
-        <span class="post-meta">Mar 30, 2016</span> • <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Brian Armstrong</span></span>
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Quiet Profile Lab — Build a Modem, Learn Some DSP</h1>
+    <p class="post-meta"><time datetime="2016-03-30T09:30:20-07:00" itemprop="datePublished">Mar 30, 2016</time> • <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Brian Armstrong</span></span></p>
+  </header>
 
-        <h3>
-          <a class="post-link" href="/quiet-blog/2016/03/30/quiet-profile-lab.html">Quiet Profile Lab — Build a Modem, Learn Some DSP</a>
-        </h3>
-
-        <p><a href="https://github.com/quiet/quiet-js">Quiet.js</a> and <a href="https://github.com/quiet/quiet">libquiet</a> are capable of transmission via audible tones, ultrasonic tones, and through an audio cable at wide spectrum. Quiet provides a JSON file which provides parameters for each of these modes. A single set of parameters, a profile, sets the center frequency of the modem, the modulation, error correction modes used, and more. Creating a new profile in a way that’s robust to hardware limitations and yet provides good throughput can be difficult, which is why I’m now pleased to announce the <a href="https://quiet.github.io/quiet-js/lab.html">Quiet Profile Lab</a>, a fully interactive workbench for creating and testing new profiles.</p>
+  <div class="post-content" itemprop="articleBody">
+    <p><a href="https://github.com/quiet/quiet-js">Quiet.js</a> and <a href="https://github.com/quiet/quiet">libquiet</a> are capable of transmission via audible tones, ultrasonic tones, and through an audio cable at wide spectrum. Quiet provides a JSON file which provides parameters for each of these modes. A single set of parameters, a profile, sets the center frequency of the modem, the modulation, error correction modes used, and more. Creating a new profile in a way that’s robust to hardware limitations and yet provides good throughput can be difficult, which is why I’m now pleased to announce the <a href="https://quiet.github.io/quiet-js/lab.html">Quiet Profile Lab</a>, a fully interactive workbench for creating and testing new profiles.</p>
 
 <figure class="figure">
 <img src="/images/qpl.png" class="figure-img img-fluid img-rounded" alt="Quiet Profile Lab in action" />
@@ -96,31 +92,9 @@
 <p>If you’ve always wanted to learn about DSP but have not had the chance, I hope you’ll spend some time in the <a href="https://quiet.github.io/quiet-js/lab.html">Lab</a>. I think you’ll really like it.</p>
 
 
+  </div>
 
-      </li>
-    
-      <li>
-        <span class="post-meta">Mar 29, 2016</span> • <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Brian Armstrong</span></span>
-
-        <h3>
-          <a class="post-link" href="/quiet-blog/2016/03/29/quiet.html">Quiet</a>
-        </h3>
-
-        <p>When I started working on <a href="https://github.com/quiet/quiet">libquiet</a>, I was trying to answer a question for myself. I had seen projects which passed data through the headphone jack, which I thought was an interesting idea. I wanted to know how fast this method could send data. Many of these methods used Frequency-Shift Keying, which is easy to implement but typically does not achieve the maximum speed possible. I started researching, which lead me to <a href="http://liquidsdr.org/">liquid sdr</a> which offers basic framing and all the modulation and error correction methods I would need to answer my question. And so, libquiet was born, creating a configurable modem engine which connects soundcard to liquid SDR.</p>
-
-<p>As the project continued, I realized it would also be possible to compile my library to JS using emscripten. I was surprised how well this works, and now, Quiet.js is compatible with the native binaries create with libquiet. My aim is to bring quiet to as many platforms as possible. It’s not just for your headphone jack, either. Quiet works quite well through your speakers.</p>
-
-<p>There’s a few reasons I chose the name quiet. For one, I was thinking about using the headphone jack, which wouldn’t emit any sound. As the project expanded, I realized that ultrasonic transmission would also be possible – another type of quiet modem. Additionally, the quiet modem uses SDR, but it’s “quiet” in the RF spectrum (mostly!). And finally, the best reason, because modems don’t work when they’re clipping! Turn down your volume before using quiet.</p>
-
-
-
-      </li>
-    
-  </ul>
-
-  <p class="rss-subscribe">subscribe <a href="/feed.xml">via RSS</a></p>
-
-</div>
+</article>
 
           </div>
         </section>
