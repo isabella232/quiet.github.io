@@ -6,9 +6,61 @@
 </description>
     <link>https://quiet.github.io/</link>
     <atom:link href="https://quiet.github.io/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 30 Mar 2016 10:13:34 -0700</pubDate>
-    <lastBuildDate>Wed, 30 Mar 2016 10:13:34 -0700</lastBuildDate>
-    <generator>Jekyll v3.1.2</generator>
+    <pubDate>Tue, 14 Aug 2018 02:27:01 -0700</pubDate>
+    <lastBuildDate>Tue, 14 Aug 2018 02:27:01 -0700</lastBuildDate>
+    <generator>Jekyll v3.8.3</generator>
+    
+      <item>
+        <title>Generating Swift Documentation From Objective-C</title>
+        <description>&lt;p&gt;I’ve been working on building documentation for &lt;a href=&quot;https://github.com/quiet&quot;&gt;Quiet Modem Project&lt;/a&gt; and I recently came up against a snag in documenting iOS libraries that contain Objective-C. Although it’s mostly advisable to stick to writing iOS libraries in Swift these days, I chose Objective-C because it felt nicer when wrapping C libraries. Since the core part of my project is a C library, being able to wrap it cleanly makes life a little easier for me.&lt;/p&gt;
+
+&lt;p&gt;The standard I’ve set for my documentation is that I want to show both the code that declares the Class or Function (or some close simplification of it) as well as structured commentary written in plain English. If a function takes two parameters, I want to show the function’s header and a good thorough explanation of what it expects for parameters, what it returns, and any extra notes about how it behaves.&lt;/p&gt;
+
+&lt;p&gt;It’s easy enough to programmatically generate API documentation for Objective-C. The wonderful &lt;a href=&quot;http://www.doxygen.org&quot;&gt;Doxygen&lt;/a&gt; is quite capable of parsing structured documentation out of comments. I’m not a fan of the actual pages and stylesheets it generates, but the XML output contains all the relevant documentation, and this output can be used to feed a separate documentation frontend like &lt;a href=&quot;https://www.mkdocs.org&quot;&gt;MkDocs&lt;/a&gt;. The structured output contains something like a structured parsing of the code itself as well as the comment strings I put alongside it. So is this the end of the story?&lt;/p&gt;
+
+&lt;p&gt;This method can generate good documentation for Objective-C, but iOS developers are going to want Swift documentation. This means that what we really want to do is generate both the Objective-C docs and the corresponding docs for the translated Swift code. There’s good precedent for this, of course – Apple’s own documentation mostly does this. How would we translate Objective-C documentation into Swift documentation? There are major semantic and syntactic differences between the two languages.&lt;/p&gt;
+
+&lt;p&gt;I thought about this for a while and started to feel despair. My project has bindings in JavaScript, Java (Android), Obj-C/Swift and then the original itself in C. One change in the core C library can require updates in documentation for 5 languages. Any solution I came up with would have to be automated, but there was surely no mode for Doxygen to generate Swift documentation from Objective-C.&lt;/p&gt;
+
+&lt;p&gt;I had hoped to find that someone else had run into this problem before and had solved it. It was at this point I discovered the &lt;a href=&quot;https://github.com/realm/jazzy&quot;&gt;jazzy&lt;/a&gt; tool. Finding this gave me a lot of optimism that I was going to be able to automate the translation process. Although I couldn’t find a way to get jazzy to do the translation for me, I realized that it relied on a tool called SourceKit that’s supplied by Xcode and that can do some kinds of source code interactions, which I thought might include Objective-C to Swift translations. This made sense to me as I knew that Xcode must somehow have the ability to figure out a Swift header from an Objective-C .h file.&lt;/p&gt;
+
+&lt;p&gt;I got &lt;a href=&quot;https://github.com/jpsim/SourceKitten&quot;&gt;SourceKitten&lt;/a&gt; running and started poking around SourceKit’s API. With a bit of Google searching, I found a request that would generate a Swift file from an Objective-C file. I was glad someone else had documented this since I would have never figured it out by myself. Yes, you really do need that UUID, which defines the SourceKit function you’re calling. It’s not localized or specific to your project.&lt;/p&gt;
+
+&lt;noscript&gt;&lt;pre&gt;400: Invalid request
+&lt;/pre&gt;&lt;/noscript&gt;
+&lt;script src=&quot;https://gist.github.com/c02f20aeadc61ff02ac243bec6a864f5.js&quot;&gt; &lt;/script&gt;
+
+&lt;p&gt;Running &lt;code class=&quot;highlighter-rouge&quot;&gt;sourcekitten request --yaml header.yaml | jq -r '.[&quot;key.sourcetext&quot;]' &amp;gt; Foo.swift&lt;/code&gt; transforms Foo.h into Foo.swift.&lt;/p&gt;
+
+&lt;noscript&gt;&lt;pre&gt;400: Invalid request
+&lt;/pre&gt;&lt;/noscript&gt;
+&lt;script src=&quot;https://gist.github.com/39deba2bdfaa812f975b31527a6de5dc.js&quot;&gt; &lt;/script&gt;
+
+&lt;noscript&gt;&lt;pre&gt;400: Invalid request
+&lt;/pre&gt;&lt;/noscript&gt;
+&lt;script src=&quot;https://gist.github.com/b0fa3a1435c1583049f2fd5c0f71a3f0.js&quot;&gt; &lt;/script&gt;
+
+&lt;p&gt;This felt like a bit of magic the first time I saw it. The transformation isn’t always perfect, but it does a pretty good job considering it’s automated. Even our structured comments moved over.&lt;/p&gt;
+
+&lt;p&gt;Code translation was an important step forward for what I wanted to do. This still wasn’t enough to build the documentation though, as what I need is the structured code listings and comments that Doxygen and similar tools build. If Doxygen had a Swift mode, this would have been the end of the story. I would just take these translated Swift files and send them through Doxygen. Unfortunately this isn’t the case.&lt;/p&gt;
+
+&lt;p&gt;I did know that SourceKit must have something like this capability since tools like jazzy were using it. Generating documentation is thankfully a much more straightforward use of sourcekitten. &lt;code class=&quot;highlighter-rouge&quot;&gt;sourcekitten structure --file Foo.swift&lt;/code&gt; gets us the structured output in a format that’s not so different from Doxygen’s XML output. With some work this can be translated into a nice Markdown file that MkDocs will consume.&lt;/p&gt;
+
+&lt;p&gt;Extracting the structured comments is trickier. In Objective-C files, SourceKit actually has some support for pulling structured comments that are in a Javadoc-like style, which is compatible with my Doxygen-style comments. It doesn’t offer the same support for Javadoc-style comments in Swift though as these comments are no longer considered relevant. Instead it is expected that Swift comments are written in Markdown. Even though SourceKit was able to maintain our comments, it can’t actually consume them in a useful manner.&lt;/p&gt;
+
+&lt;p&gt;The best option I’ve found is using &lt;code class=&quot;highlighter-rouge&quot;&gt;sourcekitten doc --single-file Foo.swift&lt;/code&gt; to get the block of comments that is associated with each declaration. I believe the easiest option to turn these comment blocks into structured documentation is writing a parser specifically for this task. Thankfully this is considerably easier than extracting the structured code information. This allows me to get the plain English explanation of each function parameter displayed properly alongside the function declaration.&lt;/p&gt;
+
+&lt;p&gt;With all of these tools in hand, it is finally possible to generate proper structured documentation for Swift users from Objective-C code. Although I’m sure there are many who would tell me to just give up Objective-C and wrap my libraries in Swift, I’m happy to say that a path to automated documentation does exist for stubborn programmers like myself.&lt;/p&gt;
+
+</description>
+        <pubDate>Mon, 13 Aug 2018 00:25:10 -0700</pubDate>
+        <link>https://quiet.github.io/quiet-blog/2018/08/13/Objective-C-Swift-Documentation.html</link>
+        <guid isPermaLink="true">https://quiet.github.io/quiet-blog/2018/08/13/Objective-C-Swift-Documentation.html</guid>
+        
+        
+        <category>quiet-blog</category>
+        
+      </item>
     
       <item>
         <title>Quiet Profile Lab — Build a Modem, Learn Some DSP</title>
