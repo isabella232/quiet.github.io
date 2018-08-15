@@ -6,13 +6,13 @@
 </description>
     <link>https://quiet.github.io/</link>
     <atom:link href="https://quiet.github.io/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Tue, 14 Aug 2018 02:27:01 -0700</pubDate>
-    <lastBuildDate>Tue, 14 Aug 2018 02:27:01 -0700</lastBuildDate>
+    <pubDate>Wed, 15 Aug 2018 01:59:38 -0700</pubDate>
+    <lastBuildDate>Wed, 15 Aug 2018 01:59:38 -0700</lastBuildDate>
     <generator>Jekyll v3.8.3</generator>
     
       <item>
         <title>Generating Swift Documentation From Objective-C</title>
-        <description>&lt;p&gt;I’ve been working on building documentation for &lt;a href=&quot;https://github.com/quiet&quot;&gt;Quiet Modem Project&lt;/a&gt; and I recently came up against a snag in documenting iOS libraries that contain Objective-C. Although it’s mostly advisable to stick to writing iOS libraries in Swift these days, I chose Objective-C because it felt nicer when wrapping C libraries. Since the core part of my project is a C library, being able to wrap it cleanly makes life a little easier for me.&lt;/p&gt;
+        <description>&lt;p&gt;I’ve been working on building documentation for &lt;a href=&quot;https://github.com/quiet&quot;&gt;Quiet Modem Project&lt;/a&gt; and I recently came up against a snag in documenting my iOS library that contains Objective-C. Although it’s mostly advisable to stick to writing iOS libraries in Swift these days, I chose Objective-C because it felt nicer when wrapping C libraries. Since the core part of my project is a C library, being able to wrap it cleanly makes life a little easier for me.&lt;/p&gt;
 
 &lt;p&gt;The standard I’ve set for my documentation is that I want to show both the code that declares the Class or Function (or some close simplification of it) as well as structured commentary written in plain English. If a function takes two parameters, I want to show the function’s header and a good thorough explanation of what it expects for parameters, what it returns, and any extra notes about how it behaves.&lt;/p&gt;
 
