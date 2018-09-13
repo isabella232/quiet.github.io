@@ -1,77 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
   <head>
   <meta charset='utf-8'>
   <meta http-equiv="X-UA-Compatible" content="chrome=1">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!--[if lt IE 9]>
-  <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-  <![endif]-->
 
-  <title>Quiet Profile Lab — Build a Modem, Learn Some DSP</title>
-  <meta name="description" content="Quiet.js and libquiet are capable of transmission via audible tones, ultrasonic tones, and through an audio cable at wide spectrum. Quiet provides a JSON fil...">
+  
 
-  <link rel="stylesheet" type="text/css" href="/stylesheets/bootstrap.min.css"></link>
-  <link rel="stylesheet" type="text/css" href="/stylesheets/stylesheet.css" media="screen">
-  <link rel="stylesheet" type="text/css" href="/stylesheets/github-dark.css" media="screen">
-  <link rel="stylesheet" type="text/css" href="/stylesheets/main.css" media="screen">
-  <link rel="stylesheet" type="text/css" href="/stylesheets/print.css" media="print">
+  <title>
+    
+      Quiet Profile Lab — Build a Modem, Learn Some DSP &middot; Quiet Project
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+
   <link rel="canonical" href="https://quiet.github.io/quiet-blog/2016/03/30/quiet-profile-lab-build-modem-learn-dsp.html">
-  <link rel="alternate" type="application/rss+xml" title="Quiet Project" href="https://quiet.github.io/feed.xml">
-  <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+
+  <link type="application/atom+xml" rel="alternate" href="https://quiet.github.io/feed.xml" title="Quiet Project" />
 </head>
 
+
   <body>
-    <div id="container">
-      <div class="inner">
-
-        <header>
-
-  <div class="wrapper">
-
-    <a class="site-title" href="/"><h1>Quiet Project</h1></a>
-
-    <nav class="site-nav">
-      <a href="#" class="menu-icon">
-        <svg viewBox="0 0 18 15">
-          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
-          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
-          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
-        </svg>
-      </a>
-
-      <div class="trigger">
-        
-          
-          <a class="page-link" href="/about/">About</a>
-          
-        
-          
-        
-          
-        
-          
-        
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">Quiet Project</h2>
+        </a>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
       </div>
     </nav>
-    <h2></h2>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by</span>
+    
+        Brian Armstrong
+    
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2016-03-30 09:30:20 -0700">March 30, 2016</time>
+    
   </div>
 
-</header>
+  <h1 class="post-title">Quiet Profile Lab — Build a Modem, Learn Some DSP</h1>
+  <div class="post-line"></div>
 
-
-        <hr>
-        <section class="main_content">
-          <div class="wrapper">
-            <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
-
-  <header class="post-header">
-    <h1 class="post-title" itemprop="name headline">Quiet Profile Lab — Build a Modem, Learn Some DSP</h1>
-    <p class="post-meta"><time datetime="2016-03-30T09:30:20-07:00" itemprop="datePublished">Mar 30, 2016</time> • <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Brian Armstrong</span></span></p>
-  </header>
-
-  <div class="post-content" itemprop="articleBody">
-    <p><a href="https://github.com/quiet/quiet-js">Quiet.js</a> and <a href="https://github.com/quiet/quiet">libquiet</a> are capable of transmission via audible tones, ultrasonic tones, and through an audio cable at wide spectrum. Quiet provides a JSON file which provides parameters for each of these modes. A single set of parameters, a profile, sets the center frequency of the modem, the modulation, error correction modes used, and more. Creating a new profile in a way that’s robust to hardware limitations and yet provides good throughput can be difficult, which is why I’m now pleased to announce the <a href="https://quiet.github.io/quiet-js/lab.html">Quiet Profile Lab</a>, a fully interactive workbench for creating and testing new profiles.</p>
+  <p><a href="https://github.com/quiet/quiet-js">Quiet.js</a> and <a href="https://github.com/quiet/quiet">libquiet</a> are capable of transmission via audible tones, ultrasonic tones, and through an audio cable at wide spectrum. Quiet provides a JSON file which provides parameters for each of these modes. A single set of parameters, a profile, sets the center frequency of the modem, the modulation, error correction modes used, and more. Creating a new profile in a way that’s robust to hardware limitations and yet provides good throughput can be difficult, which is why I’m now pleased to announce the <a href="https://quiet.github.io/quiet-js/lab.html">Quiet Profile Lab</a>, a fully interactive workbench for creating and testing new profiles.</p>
 
 <figure class="figure">
 <img src="/images/qpl.png" class="figure-img img-fluid img-rounded" alt="Quiet Profile Lab in action" />
@@ -93,18 +76,26 @@
 <p>If you’ve always wanted to learn about DSP but have not had the chance, I hope you’ll spend some time in the <a href="https://quiet.github.io/quiet-js/lab.html">Lab</a>. I think you’ll really like it.</p>
 
 
-  </div>
 
-</article>
+</div>
 
-          </div>
-        </section>
+<div class="pagination">
+  
+    <a href="/quiet-blog/2018/08/13/Objective-C-Swift-Documentation.html" class="left arrow">&#8592;</a>
+  
+  
+    <a href="/quiet-blog/2016/03/29/quiet.html" class="right arrow">&#8594;</a>
+  
 
-        <footer>
-  This page was generated by <a href="https://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
-</footer>
+  <a href="#" class="top">Top</a>
+</div>
 
-      </div>
-    </div>
+    </main>
+
+    <footer>
+      <span>
+        &copy; <time datetime="2018-09-13 00:32:08 -0700">2018</time> . Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
+      </span>
+    </footer>
   </body>
 </html>

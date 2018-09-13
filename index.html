@@ -1,187 +1,102 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
   <head>
   <meta charset='utf-8'>
   <meta http-equiv="X-UA-Compatible" content="chrome=1">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!--[if lt IE 9]>
-  <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-  <![endif]-->
 
-  <title>Quiet Project</title>
-  <meta name="description" content="Transmit data with sound. Quiet Project offers the ability to build native binaries that work with your soundcard and a JS implementation that uses Web Audio
+  
+    <meta name="description" content="Transmit data with sound. Quiet Project offers the ability to build native binaries that work with your soundcard and a JS implementation that uses Web Audio
 ">
+  
 
-  <link rel="stylesheet" type="text/css" href="/stylesheets/bootstrap.min.css"></link>
-  <link rel="stylesheet" type="text/css" href="/stylesheets/stylesheet.css" media="screen">
-  <link rel="stylesheet" type="text/css" href="/stylesheets/github-dark.css" media="screen">
-  <link rel="stylesheet" type="text/css" href="/stylesheets/main.css" media="screen">
-  <link rel="stylesheet" type="text/css" href="/stylesheets/print.css" media="print">
+  <title>
+    
+      Quiet Project
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+
   <link rel="canonical" href="https://quiet.github.io/">
-  <link rel="alternate" type="application/rss+xml" title="Quiet Project" href="https://quiet.github.io/feed.xml">
-  <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+
+  <link type="application/atom+xml" rel="alternate" href="https://quiet.github.io/feed.xml" title="Quiet Project" />
 </head>
 
+
   <body>
-    <div id="container">
-      <div class="inner">
-
-        <header>
-
-  <div class="wrapper">
-
-    <a class="site-title" href="/"><h1>Quiet Project</h1></a>
-
-    <nav class="site-nav">
-      <a href="#" class="menu-icon">
-        <svg viewBox="0 0 18 15">
-          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
-          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
-          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
-        </svg>
-      </a>
-
-      <div class="trigger">
-        
-          
-          <a class="page-link" href="/about/">About</a>
-          
-        
-          
-        
-          
-        
-          
-        
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">Quiet Project</h2>
+        </a>
+        <ul>
+          <li><a href="/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
       </div>
     </nav>
-    <h2></h2>
-  </div>
 
-</header>
+    <main>
+      <div class="catalogue">
+  
+    <a href="/quiet-blog/2018/08/13/Objective-C-Swift-Documentation.html" class="catalogue-item">
+      <div>
+        <time datetime="2018-08-13 00:25:10 -0700" class="catalogue-time">August 13, 2018</time>
+        <h1 class="catalogue-title">Generating Swift Documentation From Objective-C</h1>
+        <div class="catalogue-line"></div>
 
-
-        <hr>
-        <section class="main_content">
-          <div class="wrapper">
-            <div class="home">
-
-  <ul class="post-list">
-    
-      <li>
-        <span class="post-meta">Aug 13, 2018</span> • <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Brian Armstrong</span></span>
-
-        <h3>
-          <a class="post-link" href="/quiet-blog/2018/08/13/Objective-C-Swift-Documentation.html">Generating Swift Documentation From Objective-C</a>
-        </h3>
-
-        <p>I’ve been working on building documentation for <a href="https://github.com/quiet">Quiet Modem Project</a> and I recently came up against a snag in documenting my iOS library that contains Objective-C. Although it’s mostly advisable to stick to writing iOS libraries in Swift these days, I chose Objective-C because it felt nicer when wrapping C libraries. Since the core part of my project is a C library, being able to wrap it cleanly makes life a little easier for me.</p>
-
-<p>The standard I’ve set for my documentation is that I want to show both the code that declares the Class or Function (or some close simplification of it) as well as structured commentary written in plain English. If a function takes two parameters, I want to show the function’s header and a good thorough explanation of what it expects for parameters, what it returns, and any extra notes about how it behaves.</p>
-
-<p>It’s easy enough to programmatically generate API documentation for Objective-C. The wonderful <a href="http://www.doxygen.org">Doxygen</a> is quite capable of parsing structured documentation out of comments. I’m not a fan of the actual pages and stylesheets it generates, but the XML output contains all the relevant documentation, and this output can be used to feed a separate documentation frontend like <a href="https://www.mkdocs.org">MkDocs</a>. The structured output contains something like a structured parsing of the code itself as well as the comment strings I put alongside it. So is this the end of the story?</p>
-
-<p>This method can generate good documentation for Objective-C, but iOS developers are going to want Swift documentation. This means that what we really want to do is generate both the Objective-C docs and the corresponding docs for the translated Swift code. There’s good precedent for this, of course – Apple’s own documentation mostly does this. How would we translate Objective-C documentation into Swift documentation? There are major semantic and syntactic differences between the two languages.</p>
-
-<p>I thought about this for a while and started to feel despair. My project has bindings in JavaScript, Java (Android), Obj-C/Swift and then the original itself in C. One change in the core C library can require updates in documentation for 5 languages. Any solution I came up with would have to be automated, but there was surely no mode for Doxygen to generate Swift documentation from Objective-C.</p>
-
-<p>I had hoped to find that someone else had run into this problem before and had solved it. It was at this point I discovered the <a href="https://github.com/realm/jazzy">jazzy</a> tool. Finding this gave me a lot of optimism that I was going to be able to automate the translation process. Although I couldn’t find a way to get jazzy to do the translation for me, I realized that it relied on a tool called SourceKit that’s supplied by Xcode and that can do some kinds of source code interactions, which I thought might include Objective-C to Swift translations. This made sense to me as I knew that Xcode must somehow have the ability to figure out a Swift header from an Objective-C .h file.</p>
-
-<p>I got <a href="https://github.com/jpsim/SourceKitten">SourceKitten</a> running and started poking around SourceKit’s API. With a bit of Google searching, I found a request that would generate a Swift file from an Objective-C file. I was glad someone else had documented this since I would have never figured it out by myself. Yes, you really do need that UUID, which defines the SourceKit function you’re calling. It’s not localized or specific to your project.</p>
-
-<noscript><pre>400: Invalid request
-</pre></noscript>
-<script src="https://gist.github.com/c02f20aeadc61ff02ac243bec6a864f5.js"> </script>
-
-<p>Running <code class="highlighter-rouge">sourcekitten request --yaml header.yaml | jq -r '.["key.sourcetext"]' &gt; Foo.swift</code> transforms Foo.h into Foo.swift.</p>
-
-<noscript><pre>400: Invalid request
-</pre></noscript>
-<script src="https://gist.github.com/39deba2bdfaa812f975b31527a6de5dc.js"> </script>
-
-<noscript><pre>400: Invalid request
-</pre></noscript>
-<script src="https://gist.github.com/b0fa3a1435c1583049f2fd5c0f71a3f0.js"> </script>
-
-<p>This felt like a bit of magic the first time I saw it. The transformation isn’t always perfect, but it does a pretty good job considering it’s automated. Even our structured comments moved over.</p>
-
-<p>Code translation was an important step forward for what I wanted to do. This still wasn’t enough to build the documentation though, as what I need is the structured code listings and comments that Doxygen and similar tools build. If Doxygen had a Swift mode, this would have been the end of the story. I would just take these translated Swift files and send them through Doxygen. Unfortunately this isn’t the case.</p>
-
-<p>I did know that SourceKit must have something like this capability since tools like jazzy were using it. Generating documentation is thankfully a much more straightforward use of sourcekitten. <code class="highlighter-rouge">sourcekitten structure --file Foo.swift</code> gets us the structured output in a format that’s not so different from Doxygen’s XML output. With some work this can be translated into a nice Markdown file that MkDocs will consume.</p>
-
-<p>Extracting the structured comments is trickier. In Objective-C files, SourceKit actually has some support for pulling structured comments that are in a Javadoc-like style, which is compatible with my Doxygen-style comments. It doesn’t offer the same support for Javadoc-style comments in Swift though as these comments are no longer considered relevant. Instead it is expected that Swift comments are written in Markdown. Even though SourceKit was able to maintain our comments, it can’t actually consume them in a useful manner.</p>
-
-<p>The best option I’ve found is using <code class="highlighter-rouge">sourcekitten doc --single-file Foo.swift</code> to get the block of comments that is associated with each declaration. I believe the easiest option to turn these comment blocks into structured documentation is writing a parser specifically for this task. Thankfully this is considerably easier than extracting the structured code information. This allows me to get the plain English explanation of each function parameter displayed properly alongside the function declaration.</p>
-
-<p>With all of these tools in hand, it is finally possible to generate proper structured documentation for Swift users from Objective-C code. Although I’m sure there are many who would tell me to just give up Objective-C and wrap my libraries in Swift, I’m happy to say that a path to automated documentation does exist for stubborn programmers like myself.</p>
-
-
-
-      </li>
-    
-      <li>
-        <span class="post-meta">Mar 30, 2016</span> • <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Brian Armstrong</span></span>
-
-        <h3>
-          <a class="post-link" href="/quiet-blog/2016/03/30/quiet-profile-lab-build-modem-learn-dsp.html">Quiet Profile Lab — Build a Modem, Learn Some DSP</a>
-        </h3>
-
-        <p><a href="https://github.com/quiet/quiet-js">Quiet.js</a> and <a href="https://github.com/quiet/quiet">libquiet</a> are capable of transmission via audible tones, ultrasonic tones, and through an audio cable at wide spectrum. Quiet provides a JSON file which provides parameters for each of these modes. A single set of parameters, a profile, sets the center frequency of the modem, the modulation, error correction modes used, and more. Creating a new profile in a way that’s robust to hardware limitations and yet provides good throughput can be difficult, which is why I’m now pleased to announce the <a href="https://quiet.github.io/quiet-js/lab.html">Quiet Profile Lab</a>, a fully interactive workbench for creating and testing new profiles.</p>
-
-<figure class="figure">
-<img src="/images/qpl.png" class="figure-img img-fluid img-rounded" alt="Quiet Profile Lab in action" />
-  <figcaption class="figure-caption">Quiet Profile Lab in action</figcaption>
-</figure>
-
-<p>The <a href="https://quiet.github.io/quiet-js/lab.html">Quiet Profile Lab</a> makes it easy to test out new ideas for profiles. It offers spectrum and constellation diagrams in real time, as well as statistics about throughput, performance, and error rate. This makes it suitable not only for creating new profiles but also learning about modem design. If you’re working from a laptop, you have the perfect testbench – the laptop’s mic will likely pick up the audio generated by its own speakers.</p>
-
-<p>If you are unfamiliar with the techniques used by modems, I welcome you to try out the Lab and experiment with different settings. Because it’s interactive, the Lab is a great way to examine the behavior of various modulation modes. While Wikipedia offers good explanations for many DSP terms, it can be beneficial to see them working in a live example. Even if many of the terms in the Lab are unfamiliar, you may be able to figure out what they do, just by experimenting with them.</p>
-
-<p>If you’re not sure where to start, here are some ideas. Try changing the center frequency. Do you notice changes in how the modem sounds? Reduce the gain and see how quiet you can get the modem while still receiving frames. Increase the interpolation factor (samples per symbol) to narrow the part of the frequency spectrum that your modem uses. Can you find a high frequency, narrow spectrum setting that transfers data but which you can’t hear?</p>
-
-<p>If you have the cable on hand, I highly recommend creating a loopback setup to test on, as well. Passing the audio over a cable greatly reduces noise and will allow you to pass a more delicate, higher throughput signal and will preserve the constellation more than using speakers/mic will. The Lab includes some presets to get you started in cable mode.</p>
-
-<p>Once you’re done, have a look at some of the standards used by the devices you own, like <a href="http://electronicdesign.com/4g/introduction-lte-advanced-real-4g#%E2%80%9DFrequency%E2%80%9D">4g LTE</a> or <a href="https://en.wikipedia.org/wiki/Orthogonal_frequency-division_multiplexing#OFDM_system_comparison_table">802.11a</a>. The Lab provides a good way to get familiar with some of the techniques used in common radios, which are remarkably similar despite being carried by electromagnetic waves rather than by sound.</p>
-
-<p>If you find a profile that you’d like to start using with <a href="https://github.com/quiet/quiet-js">Quiet.js</a>, the Lab provides you with the properly formatted JSON text for the profile you’ve created. It’s as simple as copying the text and pasting it into quiet-profiles.json under a new key.</p>
-
-<p>If you’ve always wanted to learn about DSP but have not had the chance, I hope you’ll spend some time in the <a href="https://quiet.github.io/quiet-js/lab.html">Lab</a>. I think you’ll really like it.</p>
-
-
-
-      </li>
-    
-      <li>
-        <span class="post-meta">Mar 29, 2016</span> • <span itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name">Brian Armstrong</span></span>
-
-        <h3>
-          <a class="post-link" href="/quiet-blog/2016/03/29/quiet.html">Quiet</a>
-        </h3>
-
-        <p>When I started working on <a href="https://github.com/quiet/quiet">libquiet</a>, I was trying to answer a question for myself. I had seen projects which passed data through the headphone jack, which I thought was an interesting idea. I wanted to know how fast this method could send data. Many of these methods used Frequency-Shift Keying, which is easy to implement but typically does not achieve the maximum speed possible. I started researching, which lead me to <a href="http://liquidsdr.org/">liquid sdr</a> which offers basic framing and all the modulation and error correction methods I would need to answer my question. And so, libquiet was born, creating a configurable modem engine which connects soundcard to liquid SDR.</p>
-
-<p>As the project continued, I realized it would also be possible to compile my library to JS using emscripten. I was surprised how well this works, and now, Quiet.js is compatible with the native binaries create with libquiet. My aim is to bring quiet to as many platforms as possible. It’s not just for your headphone jack, either. Quiet works quite well through your speakers.</p>
-
-<p>There’s a few reasons I chose the name quiet. For one, I was thinking about using the headphone jack, which wouldn’t emit any sound. As the project expanded, I realized that ultrasonic transmission would also be possible – another type of quiet modem. Additionally, the quiet modem uses SDR, but it’s “quiet” in the RF spectrum (mostly!). And finally, the best reason, because modems don’t work when they’re clipping! Turn down your volume before using quiet.</p>
-
-
-
-      </li>
-    
-  </ul>
-
-  <p class="rss-subscribe">subscribe <a href="/feed.xml">via RSS</a></p>
-
-</div>
-
-          </div>
-        </section>
-
-        <footer>
-  This page was generated by <a href="https://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
-</footer>
+        <p>
+          I’ve been working on building documentation for Quiet Modem Project and I recently came up against a snag in documenting my iOS library that contains Objective-C. Although it’s mostly advisable to stick to writing iOS libraries in Swift these days, I chose Objective-C because it felt nicer when wrapping C libraries. Since the core part of my project is a C library, being able to wrap it cleanly makes life a little easier for me....
+        </p>
 
       </div>
-    </div>
+    </a>
+  
+    <a href="/quiet-blog/2016/03/30/quiet-profile-lab-build-modem-learn-dsp.html" class="catalogue-item">
+      <div>
+        <time datetime="2016-03-30 09:30:20 -0700" class="catalogue-time">March 30, 2016</time>
+        <h1 class="catalogue-title">Quiet Profile Lab — Build a Modem, Learn Some DSP</h1>
+        <div class="catalogue-line"></div>
+
+        <p>
+          Quiet.js and libquiet are capable of transmission via audible tones, ultrasonic tones, and through an audio cable at wide spectrum. Quiet provides a JSON file which provides parameters for each of these modes. A single set of parameters, a profile, sets the center frequency of the modem, the modulation, error correction modes used, and more. Creating a new profile in a way that’s robust to hardware limitations and yet provides good throughput can be difficult,...
+        </p>
+
+      </div>
+    </a>
+  
+    <a href="/quiet-blog/2016/03/29/quiet.html" class="catalogue-item">
+      <div>
+        <time datetime="2016-03-29 11:30:45 -0700" class="catalogue-time">March 29, 2016</time>
+        <h1 class="catalogue-title">Quiet</h1>
+        <div class="catalogue-line"></div>
+
+        <p>
+          When I started working on libquiet, I was trying to answer a question for myself. I had seen projects which passed data through the headphone jack, which I thought was an interesting idea. I wanted to know how fast this method could send data. Many of these methods used Frequency-Shift Keying, which is easy to implement but typically does not achieve the maximum speed possible. I started researching, which lead me to liquid sdr which...
+        </p>
+
+      </div>
+    </a>
+  
+</div>
+
+<div class="pagination">
+  
+  
+
+  <span>1</span>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        &copy; <time datetime="2018-09-13 00:32:08 -0700">2018</time> . Made with Jekyll using the <a href="https://github.com/chesterhow/tale/">Tale</a> theme.
+      </span>
+    </footer>
   </body>
 </html>
