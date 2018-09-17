@@ -6,8 +6,8 @@
 </description>
     <link>https://quiet.github.io/</link>
     <atom:link href="https://quiet.github.io/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Mon, 17 Sep 2018 02:10:13 -0700</pubDate>
-    <lastBuildDate>Mon, 17 Sep 2018 02:10:13 -0700</lastBuildDate>
+    <pubDate>Mon, 17 Sep 2018 02:18:59 -0700</pubDate>
+    <lastBuildDate>Mon, 17 Sep 2018 02:18:59 -0700</lastBuildDate>
     <generator>Jekyll v3.8.3</generator>
     
       <item>
@@ -121,7 +121,7 @@
 
 &lt;p&gt;We can get more error correction resilience from convolutional codes both by increasing the length of the shift register and by adding more polynomials. Increasing the length of the shift register does not reduce the transmission speed but does cost more CPU resources to decode. Every time we lengthen the shift register by one bit, we will reduce the decoding CPU performance by about 50%. Adding more polynomials adds transmission overhead but has less CPU impact than adding another bit to the shift register.&lt;/p&gt;
 
-&lt;p&gt;In practice, common lengths for the shift register range from 7 to 15 bits with 2 to 6 polynomials. Even a modern CPU cannot decode more than 1 million bits per second for a convolutional code with &lt;em&gt;k = 15&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;In practice, common lengths for the shift register range from 7 to 15 bits with 2 to 6 polynomials. Even a modern CPU cannot decode more than 1 million bits per second for a convolutional code with &lt;em&gt;k = 15&lt;/em&gt;. These configurations were used for a wide range of error correction including communications with the Voyager probe and the Mars Pathfinder.&lt;/p&gt;
 
 &lt;hr /&gt;
 

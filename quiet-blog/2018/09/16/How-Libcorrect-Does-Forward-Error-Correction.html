@@ -165,7 +165,7 @@
 
 <p>We can get more error correction resilience from convolutional codes both by increasing the length of the shift register and by adding more polynomials. Increasing the length of the shift register does not reduce the transmission speed but does cost more CPU resources to decode. Every time we lengthen the shift register by one bit, we will reduce the decoding CPU performance by about 50%. Adding more polynomials adds transmission overhead but has less CPU impact than adding another bit to the shift register.</p>
 
-<p>In practice, common lengths for the shift register range from 7 to 15 bits with 2 to 6 polynomials. Even a modern CPU cannot decode more than 1 million bits per second for a convolutional code with <em>k = 15</em>.</p>
+<p>In practice, common lengths for the shift register range from 7 to 15 bits with 2 to 6 polynomials. Even a modern CPU cannot decode more than 1 million bits per second for a convolutional code with <em>k = 15</em>. These configurations were used for a wide range of error correction including communications with the Voyager probe and the Mars Pathfinder.</p>
 
 <hr />
 
