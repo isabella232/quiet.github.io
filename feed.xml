@@ -6,9 +6,120 @@
 </description>
     <link>https://quiet.github.io/</link>
     <atom:link href="https://quiet.github.io/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 13 Sep 2018 00:48:23 -0700</pubDate>
-    <lastBuildDate>Thu, 13 Sep 2018 00:48:23 -0700</lastBuildDate>
+    <pubDate>Mon, 17 Sep 2018 00:55:21 -0700</pubDate>
+    <lastBuildDate>Mon, 17 Sep 2018 00:55:21 -0700</lastBuildDate>
     <generator>Jekyll v3.8.3</generator>
+    
+      <item>
+        <title>How Libcorrect Corrects Errors, Part I</title>
+        <description>&lt;p&gt;&lt;a href=&quot;https://github.com/quiet/libcorrect&quot;&gt;Libcorrect&lt;/a&gt; is a BSD-licensed library for forward error correction. What this means is that it can be given a payload of data and apply redundancy to the payload. The payload and redundancy are transmitted together and then sent along a medium that might add errors. Once received, the entire structure is decoded into the original payload. The redundancy allows libcorrect to decode the payload as long as the added errors do not exceed some limit. Because it is BSD-licensed, libcorrect can be used for personal and commercial applications.&lt;/p&gt;
+
+&lt;p&gt;This blog post is the first in a series which will explain how libcorrect works and what techniques it uses to decode more quickly. This information will hopefully help others who wish to learn more about FEC, implement their own error correction, or contribute to libcorrect. When I first set out to write this library, I had only a passing familiarity with each of these algorithms and managed to piece together some idea of how they worked. It took me quite a while to research each algorithm and my hope is that this post can help others shortcut past some of this time spent.&lt;/p&gt;
+
+&lt;p&gt;Libcorrect currently implements two kinds of error correction, &lt;a href=&quot;https://en.wikipedia.org/wiki/Convolutional_code&quot;&gt;convolutional codes&lt;/a&gt; and &lt;a href=&quot;https://en.wikipedia.org/wiki/Reed%E2%80%93Solomon_error_correction&quot;&gt;Reed-Solomon error correction&lt;/a&gt;. It uses the &lt;a href=&quot;https://en.wikipedia.org/wiki/Viterbi_algorithm&quot;&gt;Viterbi algorithm&lt;/a&gt; to efficiently decode convolutional codes. Neither of these algorithms would be considered state of the art currently, but both were used extensively previously, with applications including dial-up modems, QR codes and long-range space communications. Convolutional codes are robust against Gaussian white noise – that is, transmission errors which occur randomly and according to a normal distribution. Reed-Solomon applies redundancy to a block of bytes and can repair errors that occur anywhere inside the block, even if all of the errors are contiguous to one another. Combining these techniques gives a powerful basis for transmitting in the presence of noise.&lt;/p&gt;
+
+&lt;p&gt;This post will focus on the fundamentals of convolutional codes and the Viterbi algorithm. Part II will examine the techniques used by libcorrect to accelerate convolutional code decoding, which includes both portable optimizations as well as Intel SSE vectorizations. Later posts will cover libcorrect’s use of Reed-Solomon error correction.&lt;/p&gt;
+
+&lt;h2 id=&quot;convolutional-codes&quot;&gt;Convolutional Codes&lt;/h2&gt;
+
+&lt;h3 id=&quot;shift-register&quot;&gt;Shift Register&lt;/h3&gt;
+
+&lt;p&gt;The shift register is a small piece of memory that can store &lt;em&gt;k&lt;/em&gt; bits. It is called a shift register because we add a new bit to one end and each bit after slides down to the next cell. We only write one bit in at a time, but we read all the bits concatenated together. If a 4-bit shift register has the contents &lt;code class=&quot;highlighter-rouge&quot;&gt;{0, 1, 0, 1}&lt;/code&gt;, we will write that as &lt;code class=&quot;highlighter-rouge&quot;&gt;0101&lt;/code&gt;. New bits shift in on the left hand side and are discarded on the right. This conceptual device is at the heart of the convolutional code algorithm.&lt;/p&gt;
+
+&lt;figure class=&quot;figure&quot;&gt;
+&lt;img src=&quot;/assets/sr_anim.gif&quot; class=&quot;figure-img img-fluid img-rounded&quot; alt=&quot;Shift Register&quot; /&gt;
+  &lt;figcaption class=&quot;figure-caption&quot;&gt;Shift Register&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;h3 id=&quot;polynomials&quot;&gt;Polynomials&lt;/h3&gt;
+
+&lt;p&gt;A polynomial is a series of bitwise &lt;code class=&quot;highlighter-rouge&quot;&gt;XOR&lt;/code&gt; operations that computes a parity bit – the polynomial operates in &lt;a href=&quot;https://en.wikipedia.org/wiki/GF(2)&quot;&gt;GF(2)&lt;/a&gt;. These polynomials will return &lt;code class=&quot;highlighter-rouge&quot;&gt;1&lt;/code&gt; if an odd number of bits are set and &lt;code class=&quot;highlighter-rouge&quot;&gt;0&lt;/code&gt; if an even number of bits are set. The polynomials are run with the contents of the shift register as their input. For example, the polynomial &lt;em&gt;x&lt;sup&gt;2&lt;/sup&gt;&lt;/em&gt; + &lt;em&gt;1&lt;/em&gt; computes the bitwise &lt;code class=&quot;highlighter-rouge&quot;&gt;XOR&lt;/code&gt; of the third newest bit and newest bits in the shift register, while &lt;em&gt;x&lt;sup&gt;3&lt;/sup&gt;&lt;/em&gt; + &lt;em&gt;x&lt;/em&gt; + &lt;em&gt;1&lt;/em&gt; would do bitwise &lt;code class=&quot;highlighter-rouge&quot;&gt;XOR&lt;/code&gt; of the fourth, second, and first newest bits.&lt;/p&gt;
+
+&lt;figure class=&quot;figure&quot;&gt;
+&lt;img src=&quot;/assets/poly1_anim.gif&quot; class=&quot;figure-img img-fluid img-rounded&quot; alt=&quot;x&amp;lt;sup&amp;gt;2&amp;lt;/sup&amp;gt; + 1&quot; /&gt;
+  &lt;figcaption class=&quot;figure-caption&quot;&gt;x&lt;sup&gt;2&lt;/sup&gt; + 1&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;figure class=&quot;figure&quot;&gt;
+&lt;img src=&quot;/assets/poly2_anim.gif&quot; class=&quot;figure-img img-fluid img-rounded&quot; alt=&quot;x&amp;lt;sup&amp;gt;3&amp;lt;/sup&amp;gt; + x + 1&quot; /&gt;
+  &lt;figcaption class=&quot;figure-caption&quot;&gt;x&lt;sup&gt;3&lt;/sup&gt; + x + 1&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;It is these polynomials that form the basis of our redundancy. For each bit that we will load into the shift register, we will transmit the output of at least two different polynomials. The original message itself is not transmitted. Using more than two polynomials can increase tolerance to noise, but comes at the cost of reducing transmission throughput. The polynomials are chosen carefully to complement each other and increase tolerance to noise.&lt;/p&gt;
+
+&lt;p&gt;Computing the result of a polynomial from the shift register itself is a costly operation. For this reason, libcorrect initializes by simulating all &lt;em&gt;2&lt;sup&gt;k&lt;/sup&gt;&lt;/em&gt; possible register states and writing the resulting polynomial output into a lookup table. Once libcorrect is encoding or decoding, it can simply use the shift register contents as a key into this lookup table to find the polynomial output. Even for the largest supported &lt;code class=&quot;highlighter-rouge&quot;&gt;k&lt;/code&gt; (16) this results in a lookup table with only 65,536 entries.&lt;/p&gt;
+
+&lt;h3 id=&quot;encoding&quot;&gt;Encoding&lt;/h3&gt;
+
+&lt;p&gt;Encoding convolutional codes involves taking the message we want to send and feeding it one bit at a time through our shift register. The shift register will initially start with all zeros. Each time we feed in a new bit, we will save the output of each polynomial that we have chosen. We continue this process until the entire message has been fed into the shift register, followed by a sequence of 0s to flush the shift register. Once we have completed this process, we send the interleaved polynomial outputs. The transmitted message does not contain the bits of the original message.&lt;/p&gt;
+
+&lt;figure class=&quot;figure&quot;&gt;
+&lt;img src=&quot;/assets/encoding.png&quot; class=&quot;figure-img img-fluid img-rounded&quot; alt=&quot;Encoding Message&quot; /&gt;
+  &lt;figcaption class=&quot;figure-caption&quot;&gt;Encoding Message&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;h3 id=&quot;decoding&quot;&gt;Decoding&lt;/h3&gt;
+
+&lt;p&gt;As described in the section on encoding, we’ve been given the outputs of the polynomials, not of the shift register itself. What we want to do is to work backwards from these polynomials to determine the &lt;em&gt;most likely&lt;/em&gt; input bit to the shift register that produced the received bits. When the decoding algorithm has finished, we hope to recover the series of input bits that were used to generate the polynomial bits that we received.&lt;/p&gt;
+
+&lt;p&gt;At first glance this might seem impossible as there are many bits in the shift register but only 1 bit from each polynomial. The only way we can determine which input bit produced the polynomial bits is by simulating the shift register for each group of polynomial bits that we receive. We measure the error between the expected polynomial outputs for each shift register state and the polynomial bits that we received and accumulate the error for each group of inputs. This works well because the shift register’s current state is closely associated with its state at the previous bit. A shift register with the contents &lt;code class=&quot;highlighter-rouge&quot;&gt;1001000&lt;/code&gt; will contain &lt;code class=&quot;highlighter-rouge&quot;&gt;B100100&lt;/code&gt; when the next bit &lt;code class=&quot;highlighter-rouge&quot;&gt;B&lt;/code&gt; is shifted in.&lt;/p&gt;
+
+&lt;p&gt;Let’s use the example 4-bit shift register with polynomials &lt;em&gt;x&lt;sup&gt;2&lt;/sup&gt;&lt;/em&gt; + &lt;em&gt;1&lt;/em&gt; and &lt;em&gt;x&lt;sup&gt;3&lt;/sup&gt;&lt;/em&gt; + &lt;em&gt;x&lt;/em&gt; + &lt;em&gt;1&lt;/em&gt; mentioned previously. Our approach for decoding will be this: simulate a 4-bit shift register with contents all zero as we started with in the encoder. Next we simulate the first unknown bit being shifted in, which gives us two new possible shift register states, &lt;code class=&quot;highlighter-rouge&quot;&gt;1000&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;0000&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;For each of these two states, we will evaluate both polynomial outputs. We then compare these outputs to the two bits we actually received. For both shift register states, we measure the error between what we’d expect our polynomials to generate and what we actually received. Finally, we record this error total for each state. It might turn out at this point that one state mismatched on both polynomials while the other mismatched on neither, yielding error counts of 2 and 0, respectively.&lt;/p&gt;
+
+&lt;figure class=&quot;figure&quot;&gt;
+&lt;img src=&quot;/assets/decoding.png&quot; class=&quot;figure-img img-fluid img-rounded&quot; alt=&quot;Decoding First Bit&quot; /&gt;
+  &lt;figcaption class=&quot;figure-caption&quot;&gt;Decoding First Bit&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;We continue this process for every grouping of polynomial bits we receive. Every time we simulate new shift register states, we copy over the error total from the previous state. For example, if state &lt;code class=&quot;highlighter-rouge&quot;&gt;0000&lt;/code&gt; had an error of 2, then in the next bit, states &lt;code class=&quot;highlighter-rouge&quot;&gt;0000&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;1000&lt;/code&gt; will start with an error of 2. Once we’re out of bits to decode, we choose the sequence of bits which has the smallest accumulated error. This sequence is declared to be the original message.&lt;/p&gt;
+
+&lt;figure class=&quot;figure&quot;&gt;
+&lt;img src=&quot;/assets/decoding_full.png&quot; class=&quot;figure-img img-fluid img-rounded&quot; alt=&quot;Decoding Second Bit&quot; /&gt;
+  &lt;figcaption class=&quot;figure-caption&quot;&gt;Decoding Second Bit&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;This strategy has one major flaw. Every time we want to simulate another bit, we must store twice as many register states as we did in the previous bit. When we started, we needed only simulate &lt;code class=&quot;highlighter-rouge&quot;&gt;0000&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;1000&lt;/code&gt;. For the following bit, we needed to simulate &lt;code class=&quot;highlighter-rouge&quot;&gt;0000&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;0100&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;1000&lt;/code&gt;, and &lt;code class=&quot;highlighter-rouge&quot;&gt;1100&lt;/code&gt;. Once the sequence is longer than the shift register, we still must track all possible states, which means that for a message of length &lt;em&gt;m&lt;/em&gt; we will need to track the error count for &lt;em&gt;2&lt;sup&gt;m&lt;/sup&gt;&lt;/em&gt; states. This adds up quickly! Thankfully there is a clever trick which reduces the need to track so many states.&lt;/p&gt;
+
+&lt;h3 id=&quot;viterbi-algorithm&quot;&gt;Viterbi Algorithm&lt;/h3&gt;
+
+&lt;p&gt;The Viterbi algorithm is a &lt;a href=&quot;https://en.wikipedia.org/wiki/Dynamic_programming&quot;&gt;Dynamic programming&lt;/a&gt; approach to decoding convolutional codes. This algorithm makes one important observation about the sequence of decoded bits. Once our sequence of bits is longer than the length of the shift register, we can discard unlikely paths. Rather than storing error information about &lt;em&gt;2&lt;sup&gt;m&lt;/sup&gt;&lt;/em&gt; paths, we only need store &lt;em&gt;m&lt;/em&gt; * &lt;em&gt;2&lt;sup&gt;k&lt;/sup&gt;&lt;/em&gt; paths (for message length &lt;em&gt;m&lt;/em&gt; and shift register length &lt;em&gt;k&lt;/em&gt;).&lt;/p&gt;
+
+&lt;p&gt;Let’s return to our previous 4-bit shift register. Suppose that we are decoding and have received our 4th set of bits and have calculated all of the error counts for the received bits. We have 16 possible sequences so far, and the next set of bits received will bring us to 32 sequences. Each sequence will track 5 bits, but only 4 bits will actually be used for error calculation. If we carefully compare and select sequences at this step, we can actually eliminate half of the sequences without any loss in ability to decode the message.&lt;/p&gt;
+
+&lt;p&gt;Imagine that we have calculated the error for sequences &lt;code class=&quot;highlighter-rouge&quot;&gt;0110&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;0111&lt;/code&gt;. In the next step, the rightmost bit will shift out of the shift register and will no longer make any contribution to the error count, but we still need to keep track of it to know which bit was transmitted when we finish decoding. Both of these sequences will appear to shift to &lt;code class=&quot;highlighter-rouge&quot;&gt;B011&lt;/code&gt; in the next step, where &lt;em&gt;B&lt;/em&gt; is the next bit transmitted. It turns out that we can simply discard whichever of these sequences has a larger error at this point and then record the rightmost bit from the “winning” sequence.&lt;/p&gt;
+
+&lt;figure class=&quot;figure&quot;&gt;
+&lt;img src=&quot;/assets/viterbi.png&quot; class=&quot;figure-img img-fluid img-rounded&quot; alt=&quot;Picking a sequence&quot; /&gt;
+  &lt;figcaption class=&quot;figure-caption&quot;&gt;Picking a sequence&lt;/figcaption&gt;
+&lt;/figure&gt;
+
+&lt;p&gt;For every sequence at this step, there is a complementary sequence we can compare it to. Specifically, the sequences &lt;code class=&quot;highlighter-rouge&quot;&gt;XYZ0&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;XYZ1&lt;/code&gt; will be compared and one chosen as a winner. We then store the rightmost bit of the sequence with the smaller error in a table. Once we have finished this step, we will have a table with one bit for each sequence of length &lt;em&gt;k - 1&lt;/em&gt;. We will repeat this step for every new group of inputs. Libcorrect calls this table a “history table.”&lt;/p&gt;
+
+&lt;p&gt;Once we have finished decoding the message, we will actually work backwards to recover our message. We will start by inspecting which shift register state has the smallest total accumulated error and declare it to be our sequence. We will then shift this state backwards once and use this value to lookup the next bit in our history table. We will &lt;code class=&quot;highlighter-rouge&quot;&gt;OR&lt;/code&gt; this bit back into the register and then shift again, repeating the process until we have rewound the entire history table.&lt;/p&gt;
+
+&lt;p&gt;You might be wondering whether we could simply choose the sequence with the smallest error amongst all sequences and store only that sequence, rather than storing an entire table. Although this is one possible strategy, it will not yield the same error correction robustness as storing all paths. If we encounter a short-lived burst of errors, it may adversely influence the error count for the correct sequence – remember that we are choosing the sequence which is most likely given the information we have. If we wait until the message has finished and then recover the bits, we are more likely to converge to the correct sequence.&lt;/p&gt;
+
+&lt;p&gt;In practice, it is common to do some hybrid approach. The table can store some multiple of &lt;em&gt;k&lt;/em&gt; time shifts of sequences, with a periodic “rewind” operation clearing space for new sequences and decoding part of the message. For example, we might wait until we’ve decoded &lt;em&gt;20 * k&lt;/em&gt; groups of inputs, and then decode the oldest &lt;em&gt;15 * k&lt;/em&gt; bits, leaving the rest for more convergence. Letting the table grow larger uses more memory but requires less CPU time.&lt;/p&gt;
+
+&lt;h3 id=&quot;demodulation&quot;&gt;Demodulation&lt;/h3&gt;
+
+&lt;p&gt;When we send data across a network, we usually think of it as being received as a binary signal. The final part of the receiver might be a program that gets bytes of data from a socket. At a lower level, for certain kinds of lossy networks, the data might actually be transmitted as an analog signal. This implies that some part of the receive chain has to convert the received signal back to a digital signal. This component could be the software defined radio on a wireless chipset or even an analog-to-digital sampler on a soundcard.&lt;/p&gt;
+
+&lt;p&gt;Often our receivers initially get this signal with some analog fidelity. The code that demodulates the signal can produce a ‘soft’ bit which encodes the demodulator’s confidence in the demodulation process. For example, the demodulator might produce an 8-bit confidence value for every single bit received, where &lt;code class=&quot;highlighter-rouge&quot;&gt;00000000&lt;/code&gt; implies a high level of confidence in a &lt;code class=&quot;highlighter-rouge&quot;&gt;0&lt;/code&gt; bit, &lt;code class=&quot;highlighter-rouge&quot;&gt;11111111&lt;/code&gt; implies a high level of confidence in a &lt;code class=&quot;highlighter-rouge&quot;&gt;1&lt;/code&gt; bit, and &lt;code class=&quot;highlighter-rouge&quot;&gt;10000000&lt;/code&gt; implies complete uncertainty in which bit was received. This confidence value is useful during error correction because we will want to aggregate our decoding process over a long sequence of bits. A high level of uncertainty about a single bit from the demodulator helps the decoder make the right decisions for the other nearby bits.&lt;/p&gt;
+
+&lt;h3 id=&quot;decoding-soft-bits&quot;&gt;Decoding Soft Bits&lt;/h3&gt;
+
+</description>
+        <pubDate>Sun, 02 Sep 2018 14:25:13 -0700</pubDate>
+        <link>https://quiet.github.io/quiet-blog/2018/09/02/How-Libcorrect-Does-Forward-Error-Correction.html</link>
+        <guid isPermaLink="true">https://quiet.github.io/quiet-blog/2018/09/02/How-Libcorrect-Does-Forward-Error-Correction.html</guid>
+        
+        
+        <category>quiet-blog</category>
+        
+      </item>
     
       <item>
         <title>Generating Swift Documentation From Objective-C</title>
