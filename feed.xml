@@ -6,13 +6,13 @@
 </description>
     <link>https://quiet.github.io/</link>
     <atom:link href="https://quiet.github.io/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Mon, 17 Sep 2018 02:08:24 -0700</pubDate>
-    <lastBuildDate>Mon, 17 Sep 2018 02:08:24 -0700</lastBuildDate>
+    <pubDate>Mon, 17 Sep 2018 02:10:13 -0700</pubDate>
+    <lastBuildDate>Mon, 17 Sep 2018 02:10:13 -0700</lastBuildDate>
     <generator>Jekyll v3.8.3</generator>
     
       <item>
         <title>How Libcorrect Corrects Errors, Part I</title>
-        <description>&lt;p&gt;&lt;a href=&quot;https://github.com/quiet/libcorrect&quot;&gt;Libcorrect&lt;/a&gt; is a BSD-licensed library for forward error correction. What this means is that it can be given a payload of data and apply redundancy to the payload. The payload and redundancy are transmitted together and then sent along a medium that might add errors. Once received, the entire structure is decoded into the original payload. The redundancy allows libcorrect to decode the payload as long as the added errors do not exceed some limit. Because it is BSD-licensed, libcorrect can be used for personal and commercial applications.&lt;/p&gt;
+        <description>&lt;p&gt;&lt;a href=&quot;https://github.com/quiet/libcorrect&quot;&gt;Libcorrect&lt;/a&gt; is a BSD-licensed library for forward error correction. What this means is that it can be given a payload of data and apply specially chosen redundancy. The payload and redundancy are transmitted together and then sent along a medium that might add errors. Once received, the entire structure is decoded into the original payload. The redundancy allows libcorrect to decode the payload as long as the added errors do not exceed some limit. Because it is BSD-licensed, libcorrect can be used for personal and commercial applications.&lt;/p&gt;
 
 &lt;p&gt;This blog post is the first in a series which will explain how libcorrect works and what techniques it uses to decode more quickly. This information will hopefully help others who wish to learn more about FEC, implement their own error correction, or contribute to libcorrect. When I first set out to write this library, I had only a passing familiarity with each of these algorithms and managed to piece together some idea of how they worked. It took me quite a while to research each algorithm and my hope is that this post can help others shortcut past some of this time spent.&lt;/p&gt;
 
