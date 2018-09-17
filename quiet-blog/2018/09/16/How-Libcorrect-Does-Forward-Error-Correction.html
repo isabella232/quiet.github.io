@@ -20,7 +20,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
-  <link rel="canonical" href="https://quiet.github.io/quiet-blog/2018/09/02/How-Libcorrect-Does-Forward-Error-Correction.html">
+  <link rel="canonical" href="https://quiet.github.io/quiet-blog/2018/09/16/How-Libcorrect-Does-Forward-Error-Correction.html">
 
   <link type="application/atom+xml" rel="alternate" href="https://quiet.github.io/feed.xml" title="Quiet Project" />
 </head>
@@ -49,7 +49,7 @@
 
     
       <br>
-      <span>on&nbsp;</span><time datetime="2018-09-02 14:25:13 -0700">September 02, 2018</time>
+      <span>on&nbsp;</span><time datetime="2018-09-16 14:25:13 -0700">September 16, 2018</time>
     
   </div>
 
@@ -66,6 +66,10 @@
 
 <h2 id="convolutional-codes">Convolutional Codes</h2>
 
+<p>There are a wide range of options available for forward error correction. For example, we might choose to take each bit of our message and repeat it 3 times. On the receiving end, we would examine each grouping of 3 bits and pick whichever bit appears in majority. We’d like a scheme to has good resilience to errors while not adding too much overhead to our transmission.</p>
+
+<p>Convolutional codes offer a way encode information about each bit of our message over multiple bits in the transmission. This method effectively “smears out” each bit with its neighboring bits so that no transmitted bit contains only information about just one message bit. The encoder pushes each bit through a shift register and then transmits the outputs of carefully chosen <em>XOR</em> operations. The decoder recreates the message by simulating possible message bits and measuring errors against the received transmission, then choosing the sequence of message bits with the least error. This method can recover the message even when the transmitted bits are received incorrectly periodically. The following sections will examine in more detail how this technique is implemented.</p>
+
 <h3 id="shift-register">Shift Register</h3>
 
 <p>The shift register is a small piece of memory that can store <em>k</em> bits. It is called a shift register because we add a new bit to one end and each bit after slides down to the next cell. We only write one bit in at a time, but we read all the bits concatenated together. If a 4-bit shift register has the contents <code class="highlighter-rouge">{0, 1, 0, 1}</code>, we will write that as <code class="highlighter-rouge">0101</code>. New bits shift in on the left hand side and are discarded on the right. This conceptual device is at the heart of the convolutional code algorithm.</p>
@@ -77,7 +81,7 @@
 
 <h3 id="polynomials">Polynomials</h3>
 
-<p>A polynomial is a series of bitwise <code class="highlighter-rouge">XOR</code> operations that computes a parity bit – the polynomial operates in <a href="https://en.wikipedia.org/wiki/GF(2)">GF(2)</a>. These polynomials will return <code class="highlighter-rouge">1</code> if an odd number of bits are set and <code class="highlighter-rouge">0</code> if an even number of bits are set. The polynomials are run with the contents of the shift register as their input. For example, the polynomial <em>x<sup>2</sup></em> + <em>1</em> computes the bitwise <code class="highlighter-rouge">XOR</code> of the third newest bit and newest bits in the shift register, while <em>x<sup>3</sup></em> + <em>x</em> + <em>1</em> would do bitwise <code class="highlighter-rouge">XOR</code> of the fourth, second, and first newest bits.</p>
+<p>A polynomial is a series of bitwise <em>XOR</em> operations that computes a parity bit – the polynomial operates in <a href="https://en.wikipedia.org/wiki/GF(2)">GF(2)</a>. These polynomials will return <em>1</em> if an odd number of bits are set and <em>0</em> if an even number of bits are set. The polynomials are run with the contents of the shift register as their input. For example, the polynomial <em>x<sup>2</sup></em> + <em>1</em> computes the bitwise <em>XOR</em> of the third newest bit and newest bits in the shift register, while <em>x<sup>3</sup></em> + <em>x</em> + <em>1</em> would do bitwise <em>XOR</em> of the fourth, second, and first newest bits.</p>
 
 <figure class="figure">
 <img src="/assets/poly1_anim.gif" class="figure-img img-fluid img-rounded" alt="x&lt;sup&gt;2&lt;/sup&gt; + 1" />
@@ -90,8 +94,6 @@
 </figure>
 
 <p>It is these polynomials that form the basis of our redundancy. For each bit that we will load into the shift register, we will transmit the output of at least two different polynomials. The original message itself is not transmitted. Using more than two polynomials can increase tolerance to noise, but comes at the cost of reducing transmission throughput. The polynomials are chosen carefully to complement each other and increase tolerance to noise.</p>
-
-<p>Computing the result of a polynomial from the shift register itself is a costly operation. For this reason, libcorrect initializes by simulating all <em>2<sup>k</sup></em> possible register states and writing the resulting polynomial output into a lookup table. Once libcorrect is encoding or decoding, it can simply use the shift register contents as a key into this lookup table to find the polynomial output. Even for the largest supported <code class="highlighter-rouge">k</code> (16) this results in a lookup table with only 65,536 entries.</p>
 
 <h3 id="encoding">Encoding</h3>
 
@@ -106,7 +108,7 @@
 
 <p>As described in the section on encoding, we’ve been given the outputs of the polynomials, not of the shift register itself. What we want to do is to work backwards from these polynomials to determine the <em>most likely</em> input bit to the shift register that produced the received bits. When the decoding algorithm has finished, we hope to recover the series of input bits that were used to generate the polynomial bits that we received.</p>
 
-<p>At first glance this might seem impossible as there are many bits in the shift register but only 1 bit from each polynomial. The only way we can determine which input bit produced the polynomial bits is by simulating the shift register for each group of polynomial bits that we receive. We measure the error between the expected polynomial outputs for each shift register state and the polynomial bits that we received and accumulate the error for each group of inputs. This works well because the shift register’s current state is closely associated with its state at the previous bit. A shift register with the contents <code class="highlighter-rouge">1001000</code> will contain <code class="highlighter-rouge">B100100</code> when the next bit <code class="highlighter-rouge">B</code> is shifted in.</p>
+<p>At first glance this might seem impossible as there are many bits in the shift register but only 1 bit from each polynomial. The only way we can determine which input bit produced the polynomial bits is by simulating the shift register for each group of polynomial bits that we receive. We measure the error between the expected polynomial outputs for each shift register state and the polynomial bits that we received and accumulate the error for each group of inputs. This works well because the shift register’s current state is closely associated with its state at the previous bit. A shift register with the contents <code class="highlighter-rouge">1001000</code> will contain <code class="highlighter-rouge">B100100</code> when the next bit <em>B</em> is shifted in.</p>
 
 <p>Let’s use the example 4-bit shift register with polynomials <em>x<sup>2</sup></em> + <em>1</em> and <em>x<sup>3</sup></em> + <em>x</em> + <em>1</em> mentioned previously. Our approach for decoding will be this: simulate a 4-bit shift register with contents all zero as we started with in the encoder. Next we simulate the first unknown bit being shifted in, which gives us two new possible shift register states, <code class="highlighter-rouge">1000</code> and <code class="highlighter-rouge">0000</code>.</p>
 
@@ -141,7 +143,7 @@
 
 <p>For every sequence at this step, there is a complementary sequence we can compare it to. Specifically, the sequences <code class="highlighter-rouge">XYZ0</code> and <code class="highlighter-rouge">XYZ1</code> will be compared and one chosen as a winner. We then store the rightmost bit of the sequence with the smaller error in a table. Once we have finished this step, we will have a table with one bit for each sequence of length <em>k - 1</em>. We will repeat this step for every new group of inputs. Libcorrect calls this table a “history table.”</p>
 
-<p>Once we have finished decoding the message, we will actually work backwards to recover our message. We will start by inspecting which shift register state has the smallest total accumulated error and declare it to be our sequence. We will then shift this state backwards once and use this value to lookup the next bit in our history table. We will <code class="highlighter-rouge">OR</code> this bit back into the register and then shift again, repeating the process until we have rewound the entire history table.</p>
+<p>Once we have finished decoding the message, we will actually work backwards to recover our message. We will start by inspecting which shift register state has the smallest total accumulated error and declare it to be our sequence. We will then shift this state backwards once and use this value to lookup the next bit in our history table. We will <em>OR</em> this bit back into the register and then shift again, repeating the process until we have rewound the entire history table.</p>
 
 <p>You might be wondering whether we could simply choose the sequence with the smallest error amongst all sequences and store only that sequence, rather than storing an entire table. Although this is one possible strategy, it will not yield the same error correction robustness as storing all paths. If we encounter a short-lived burst of errors, it may adversely influence the error count for the correct sequence – remember that we are choosing the sequence which is most likely given the information we have. If we wait until the message has finished and then recover the bits, we are more likely to converge to the correct sequence.</p>
 
@@ -151,9 +153,23 @@
 
 <p>When we send data across a network, we usually think of it as being received as a binary signal. The final part of the receiver might be a program that gets bytes of data from a socket. At a lower level, for certain kinds of lossy networks, the data might actually be transmitted as an analog signal. This implies that some part of the receive chain has to convert the received signal back to a digital signal. This component could be the software defined radio on a wireless chipset or even an analog-to-digital sampler on a soundcard.</p>
 
-<p>Often our receivers initially get this signal with some analog fidelity. The code that demodulates the signal can produce a ‘soft’ bit which encodes the demodulator’s confidence in the demodulation process. For example, the demodulator might produce an 8-bit confidence value for every single bit received, where <code class="highlighter-rouge">00000000</code> implies a high level of confidence in a <code class="highlighter-rouge">0</code> bit, <code class="highlighter-rouge">11111111</code> implies a high level of confidence in a <code class="highlighter-rouge">1</code> bit, and <code class="highlighter-rouge">10000000</code> implies complete uncertainty in which bit was received. This confidence value is useful during error correction because we will want to aggregate our decoding process over a long sequence of bits. A high level of uncertainty about a single bit from the demodulator helps the decoder make the right decisions for the other nearby bits.</p>
+<p>Often our receivers initially get this signal with some analog fidelity. The code that demodulates the signal can produce a ‘soft’ bit which encodes the demodulator’s confidence in the demodulation process. For example, the demodulator might produce an 8-bit confidence value for every single bit received, where <code class="highlighter-rouge">00000000</code> implies a high level of confidence in a <em>0</em> bit, <code class="highlighter-rouge">11111111</code> implies a high level of confidence in a <em>1</em> bit, and <code class="highlighter-rouge">10000000</code> implies complete uncertainty in which bit was received. This confidence value is useful during error correction because we will want to aggregate our decoding process over a long sequence of bits. Receiving a high level of uncertainty about a single incorrect bit from the demodulator helps the decoder make the right decisions for the other nearby bits.</p>
 
 <h3 id="decoding-soft-bits">Decoding Soft Bits</h3>
+
+<p>We can make use of the demodulator’s soft bits during the convolutional code decoder process. If we run this process on soft bits rather than hard bits, we can continue to recover the message in the presence of more noise than we would have been able to otherwise.</p>
+
+<p>Decoding convolutional codes with soft bits is almost exactly the same process as with hard bits. Previously we calculated the error as the number of bits which differed between the received bits and the simulated polynomial outputs. With soft received bits, we will instead store the absolute value of the difference between the received soft value and the simulated polynomial value encoded as soft bits. For example, if the polynomial value is <em>1</em> and the received soft value is <code class="highlighter-rouge">1110000</code> then we store <code class="highlighter-rouge">11111111 - 11100000 = 11111</code> as the error. If instead the polynomial value were <em>0</em> and the received soft value were <code class="highlighter-rouge">10100000</code> then the error would be <code class="highlighter-rouge">10100000</code>. The error continues to accumulate as a sum just as it does when decoding hard bits.</p>
+
+<h3 id="configuration">Configuration</h3>
+
+<p>We can get more error correction resilience from convolutional codes both by increasing the length of the shift register and by adding more polynomials. Increasing the length of the shift register does not reduce the transmission speed but does cost more CPU resources to decode. Every time we lengthen the shift register by one bit, we will reduce the decoding CPU performance by about 50%. Adding more polynomials adds transmission overhead but has less CPU impact than adding another bit to the shift register.</p>
+
+<p>In practice, common lengths for the shift register range from 7 to 15 bits with 2 to 6 polynomials. Even a modern CPU cannot decode more than 1 million bits per second for a convolutional code with <em>k = 15</em>.</p>
+
+<hr />
+
+<p><em>Stay tuned for the next post which will examine how <a href="https://github.com/quiet/libcorrect">libcorrect</a> accelerates the convolutional code decoding process. If you have questions or comments about this post, <a href="https://discordapp.com/invite/eRw5UjF">stop by and say hello</a>.</em></p>
 
 
 
